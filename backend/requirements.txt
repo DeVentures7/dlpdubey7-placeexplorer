@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+google-genai
+mcp[cli]<2
+chromadb
+httpx

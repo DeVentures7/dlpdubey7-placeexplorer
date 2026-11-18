@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Debug-only manifest overlay: allows cleartext HTTP so the debug build
+  can reach the development FastAPI backend (plain http:// on the laptop,
+  via 10.0.2.2 on emulators or the laptop's LAN IP on physical devices).
+
+  This overlay merges ONLY into debug builds. Release builds keep the
+  platform default and enforce HTTPS everywhere.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application android:usesCleartextTraffic="true" />
+</manifest>
