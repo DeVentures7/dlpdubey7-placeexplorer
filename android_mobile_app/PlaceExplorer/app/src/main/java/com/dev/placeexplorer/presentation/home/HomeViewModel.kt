@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dev.placeexplorer.core.AppContainer
 import com.dev.placeexplorer.core.OutingSession
+import com.dev.placeexplorer.core.RepositoryMode
 import com.dev.placeexplorer.data.remote.ApiException
 import com.dev.placeexplorer.domain.model.FoodPreference
 import com.dev.placeexplorer.domain.model.Interest
@@ -37,6 +38,8 @@ data class HomeUiState(
     val foodPreference: FoodPreference = FoodPreference.VEGETARIAN, // default: Veg
     /** Device fix; always the starting point of the outing. */
     val currentLocationFix: StartLocation? = null,
+    /** True when the app runs on bundled sample data (mock mode). */
+    val isMockMode: Boolean = false,
     val isLocating: Boolean = false,
     val needsPermissionRequest: Boolean = false, // Compose launches the system dialog
     val locationPermissionDenied: Boolean = false,
@@ -58,6 +61,7 @@ class HomeViewModel(
     private val repository: com.dev.placeexplorer.domain.repository.OutingRepository = AppContainer.outingRepository,
     private val locationProvider: DeviceLocationProvider = AppContainer.locationProvider,
     private val locationSearcher: LocationSearcher = AppContainer.locationSearcher,
+    private val mockMode: Boolean = AppContainer.repositoryMode == RepositoryMode.MOCK,
     private val reverseGeocoder: suspend (Double, Double) -> com.dev.placeexplorer.data.remote.ApiGeoReverseResponse =
         { lat, lng -> AppContainer.planApi.reverseGeocode(lat, lng) }
 ) : ViewModel() {
@@ -66,9 +70,24 @@ class HomeViewModel(
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
-        // Auto-plan-from-here: resolve the device location (and, from it,
-        // the default destination city) as soon as the home screen opens.
-        beginCurrentLocationFlow()
+        if (mockMode) {
+            // Mock data is self-contained: the default destination shows
+            // immediately, without GPS, geocoding or any backend call.
+            _uiState.update {
+                it.copy(
+                    destination = OutingRequest.DEFAULT_DESTINATION,
+                    isMockMode = true
+                )
+            }
+            // Locate only when permission already exists — the mock
+            // experience is never gated on the permission dialog or on a
+            // GPS fix.
+            if (locationProvider.isPermissionGranted()) locateDevice()
+        } else {
+            // Auto-plan-from-here: resolve the device location (and, from
+            // it, the default destination city) as soon as home opens.
+            beginCurrentLocationFlow()
+        }
     }
 
     fun onDurationSelected(duration: OutingDuration) = _uiState.update { it.copy(duration = duration) }
@@ -212,7 +231,11 @@ class HomeViewModel(
                             locationError = null
                         )
                     }
-                    resolveCurrentCity(result.latitude, result.longitude)
+                    // Mock data needs no city lookup: the destination is
+                    // already preset, and the reverse-geocode call would
+                    // only produce a "couldn't detect your city" popup
+                    // when the backend is unreachable.
+                    if (!mockMode) resolveCurrentCity(result.latitude, result.longitude)
                 }
                 is DeviceLocationResult.GpsDisabled -> {
                     _uiState.update {
@@ -306,9 +329,13 @@ class HomeViewModel(
         // The outing always starts from the device's current location; no
         // hardcoded fallback coordinates exist. If the fix isn't there yet,
         // acquire it now — the button shows the progress — and continue
-        // planning automatically once it lands.
+        // planning automatically once it lands. Mock data mode is the one
+        // exception: the mock repository plans from the destination city
+        // center when no fix exists, so planning never waits on GPS.
         viewModelScope.launch {
-            val fix = state.currentLocationFix ?: waitForCurrentLocation() ?: run {
+            val fix = state.currentLocationFix
+                ?: (if (mockMode) null else waitForCurrentLocation())
+            if (fix == null && !mockMode) {
                 _uiState.update {
                     it.copy(
                         isGenerating = false,
@@ -332,6 +359,7 @@ class HomeViewModel(
                         interests = state.interests,
                         foodPreference = state.foodPreference,
                         startLocation = fix
+                            ?: StartLocation(name = "Current Location", isCurrentLocation = true)
                     )
                 )
             }.onSuccess { itinerary ->

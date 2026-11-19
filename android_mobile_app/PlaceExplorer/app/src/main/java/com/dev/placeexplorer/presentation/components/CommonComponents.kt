@@ -31,6 +31,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.dev.placeexplorer.presentation.itinerary.distanceLabel
+import com.dev.placeexplorer.presentation.itinerary.formatDuration
 
 /**
  * Section header with an optional emoji/title row, used across the home form.
@@ -45,14 +47,15 @@ fun SectionHeader(
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,
-            color = Color.Black
+            // Near-black slate: reads as black but a touch softer than pure black.
+            color = MaterialTheme.colorScheme.onBackground
 
         )
         if (subtitle != null) {
             Text(
                 text = subtitle,
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Black
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onBackground
             )
         }
     }
@@ -141,7 +144,7 @@ fun InterestCard(
             Spacer(Modifier.height(8.dp))
             Text(
                 text = title,
-                style = MaterialTheme.typography.labelMedium,
+                style = MaterialTheme.typography.labelLarge,
                 // Selected: deep container ink for strong contrast on the
                 // light blue tile; default: slightly softened slate so the
                 // unselected state recedes without losing legibility.
@@ -164,7 +167,6 @@ fun BrandHeader(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 10.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
@@ -181,26 +183,54 @@ fun BrandHeader(
                 Text(
                     text = "PlaceExplorer",
                     style = MaterialTheme.typography.headlineSmall,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
                     text = "Plan smarter days out",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Black
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             }
         }
         Spacer(Modifier.height(16.dp))
-        Text(
-            text = "Plan Your outing today?",
-            style = MaterialTheme.typography.titleLarge,
-            color = Color.Black
-        )
-        Text(
-            text = "Tell us your destination and preferences — we'll build a route with real places and travel times.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.Black
-        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.linearGradient(
+                        listOf(
+                            MaterialTheme.colorScheme.primary,
+                            MaterialTheme.colorScheme.secondary
+                        )
+                    )
+                )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Brush.linearGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.primary,
+                                MaterialTheme.colorScheme.secondary
+                            )
+                        )
+                    )
+                    .padding(20.dp)
+            ) {
+                Text(
+                    text = "Plan Your outing today?",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = androidx.compose.ui.graphics.Color.White
+                )
+                Text(
+                    text = "Tell us your destination and preferences — we'll build a route with real places and travel times.",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = androidx.compose.ui.graphics.Color.White
+                )
+            }
+        }
+
     }
 }
 
@@ -226,7 +256,7 @@ fun InfoRow(
         Spacer(Modifier.width(8.dp))
         Text(
             text = text,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
     }

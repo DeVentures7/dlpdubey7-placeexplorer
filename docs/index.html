@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#081426">
+  <meta name="description" content="PlaceExplorer — an AI-powered outing planner that turns your preferences into practical, route-aware day plans.">
+  <title>PlaceExplorer | AI-Powered Outing Planner</title>
+  <style>
+    :root{--bg:#081426;--panel:#101f35;--panel2:#142844;--ink:#f4f7ff;--muted:#a9b8ce;--blue:#69a7ff;--cyan:#72e0d0;--line:#263b57;--max:1160px}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+    a{color:inherit}.wrap{width:min(var(--max),calc(100% - 40px));margin:auto}
+    .nav{height:76px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.08)}
+    .brand{font-weight:800;letter-spacing:.2px;font-size:1.12rem}.brand span{color:var(--cyan)}.navlinks{display:flex;gap:25px;color:var(--muted);font-size:.92rem}.navlinks a{text-decoration:none}.navlinks a:hover{color:white}
+    .hero{padding:86px 0 70px;display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+    .eyebrow{color:var(--cyan);font-size:.78rem;font-weight:800;letter-spacing:2px;text-transform:uppercase}
+    h1{font-size:clamp(2.8rem,6vw,5rem);line-height:1.04;letter-spacing:-2.7px;margin:18px 0 22px}
+    h1 em{font-style:normal;color:var(--blue)}.lead{color:var(--muted);font-size:1.14rem;max-width:610px}
+    .actions{display:flex;gap:13px;flex-wrap:wrap;margin-top:30px}.btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 19px;border-radius:10px;text-decoration:none;font-weight:750;border:1px solid var(--line)}.primary{background:#3979e8;border-color:#3979e8;color:white}.secondary{background:transparent}
+    .hero-visual{position:relative;min-height:420px;display:flex;align-items:center;justify-content:center}
+    .glow{position:absolute;width:330px;height:330px;border-radius:50%;background:#2867cf;filter:blur(110px);opacity:.35}
+    .phone-stack{position:relative;display:flex;align-items:center;gap:14px;transform:rotate(-3deg)}
+    .phone-stack img{height:370px;width:auto;border:5px solid #182b44;border-radius:22px;box-shadow:0 24px 70px #0008}
+    .phone-stack img:nth-child(2){height:415px;z-index:2}.phone-stack img:nth-child(1),.phone-stack img:nth-child(3){margin-top:35px}
+    section{padding:68px 0}.section-head{max-width:700px;margin-bottom:30px}.section-head h2{font-size:2rem;line-height:1.2;margin:8px 0 10px;letter-spacing:-.7px}.section-head p,.muted{color:var(--muted)}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:17px}.feature,.tech,.arch{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px}
+    .feature .ico{font-size:1.5rem}.feature h3,.tech h3{margin:10px 0 5px;font-size:1.08rem}.feature p,.tech p{margin:0;color:var(--muted);font-size:.94rem}
+    .screens{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}.shot{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:17px;padding:15px;text-align:center}.shot img{height:490px;max-width:100%;width:auto;object-fit:contain;border-radius:10px;background:#d8eaff}.shot figcaption{padding:13px 4px 2px;font-weight:700}.shot small{display:block;color:var(--muted);font-weight:400}
+    .techgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.tech ul{padding-left:19px;margin:12px 0 0;color:var(--muted)}.tech li{margin:4px 0}
+    .architecture{background:linear-gradient(135deg,#101f35,#0d1a2c);border:1px solid var(--line);border-radius:18px;padding:28px}
+    .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:stretch}.node{background:var(--panel2);border:1px solid #345274;border-radius:12px;padding:17px;text-align:center}.node strong{display:block}.node span{font-size:.84rem;color:var(--muted)}.arrow{display:none}
+    .arch-note{color:var(--muted);margin:20px 0 0;font-size:.94rem}
+    .disclaimer{border-left:3px solid var(--cyan);padding:12px 16px;background:#0e2033;color:var(--muted);border-radius:0 10px 10px 0;margin-top:24px}
+    footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-size:.9rem}.foot{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap}
+    @media(max-width:850px){.hero{grid-template-columns:1fr;padding-top:60px;gap:22px}.hero-visual{min-height:350px}.phone-stack img{height:300px}.phone-stack img:nth-child(2){height:345px}.grid3,.techgrid{grid-template-columns:repeat(2,1fr)}.flow{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:600px){.wrap{width:min(100% - 28px,var(--max))}.nav{height:64px}.navlinks{gap:12px;font-size:.8rem}.navlinks a:nth-child(2){display:none}.hero{padding:48px 0 36px}h1{letter-spacing:-1.8px}.hero-visual{min-height:290px}.phone-stack{gap:7px}.phone-stack img{height:230px;border-width:3px;border-radius:14px}.phone-stack img:nth-child(2){height:270px}.grid3,.techgrid,.screens{grid-template-columns:1fr}.shot img{height:540px}.flow{grid-template-columns:1fr}section{padding:48px 0}}
+  </style>
+</head>
+<body>
+  <header class="wrap nav">
+    <div class="brand">Place<span>Explorer</span></div>
+    <nav class="navlinks" aria-label="Main navigation">
+      <a href="#features">Features</a><a href="#screenshots">Screenshots</a><a href="#architecture">Architecture</a><a href="#technology">Tech stack</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="wrap hero">
+      <div>
+        <div class="eyebrow">Android · AI · Location-aware planning</div>
+        <h1>Make every outing<br><em>worth the journey.</em></h1>
+        <p class="lead">PlaceExplorer is an AI-powered outing planner that turns a destination and a few preferences into a practical, route-aware half-day or full-day itinerary.</p>
+        <div class="actions">
+          <a class="btn primary" href="https://github.com/DeVentures7/dlpdubey7-placeexplorer" target="_blank" rel="noopener">View source on GitHub ↗</a>
+          <a class="btn secondary" href="#screenshots">Explore app screens</a>
+        </div>
+      </div>
+      <div class="hero-visual" aria-label="PlaceExplorer Android app preview">
+        <div class="glow"></div>
+        <div class="phone-stack">
+          <img src="assets/home-screen.jpeg" alt="PlaceExplorer outing preferences home screen">
+          <img src="assets/itinerary-screen.jpeg" alt="PlaceExplorer generated outing itinerary">
+          <img src="assets/place-details-screen.jpeg" alt="PlaceExplorer place details and nearby food options">
+        </div>
+      </div>
+    </div>
+
+    <section id="features">
+      <div class="wrap">
+        <div class="section-head"><div class="eyebrow">What it does</div><h2>From “where should we go?” to a plan.</h2><p>Choose what matters for the outing and get an itinerary designed around places, timing and travel.</p></div>
+        <div class="grid3">
+          <article class="feature"><div class="ico">🧭</div><h3>Guided outing planning</h3><p>Set your destination, half-day or full-day duration, morning or evening, interests and food preference.</p></article>
+          <article class="feature"><div class="ico">🗺️</div><h3>Route-aware itinerary</h3><p>See ordered stops, suggested arrival times, visit durations and road-based travel legs.</p></article>
+          <article class="feature"><div class="ico">📍</div><h3>Place discovery</h3><p>Discover places using OpenStreetMap data, destination search and current-location support.</p></article>
+          <article class="feature"><div class="ico">ℹ️</div><h3>Useful place details</h3><p>Explore destination information, nearby food options and other notable places around a stop.</p></article>
+          <article class="feature"><div class="ico">🛕</div><h3>Interest-aware results</h3><p>Interest-specific filtering, including temple-focused results for the Temples &amp; Spiritual category.</p></article>
+          <article class="feature"><div class="ico">✨</div><h3>Agentic AI + RAG</h3><p>Gemini function calling, MCP tools and retrieval-augmented context support the planning experience.</p></article>
+        </div>
+        <div class="disclaimer">PlaceExplorer is a development-stage portfolio project. Place availability, route coverage and third-party service responses depend on the underlying data providers.</div>
+      </div>
+    </section>
+
+    <section id="screenshots">
+      <div class="wrap">
+        <div class="section-head"><div class="eyebrow">App preview</div><h2>See PlaceExplorer in action.</h2><p>Actual Android application screenshots from the project.</p></div>
+        <div class="screens">
+          <figure class="shot"><img src="assets/home-screen.jpeg" alt="Home screen for choosing destination, outing duration, time, interests and food preference"><figcaption>Plan your outing<small>Choose destination and preferences</small></figcaption></figure>
+          <figure class="shot"><img src="assets/itinerary-screen.jpeg" alt="Generated itinerary with four places and estimated arrival times"><figcaption>Your itinerary<small>Ordered stops and travel estimates</small></figcaption></figure>
+          <figure class="shot"><img src="assets/place-details-screen.jpeg" alt="Place details with opening hours, navigation and nearby food options"><figcaption>Place details<small>Explore useful information around a stop</small></figcaption></figure>
+        </div>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <div class="wrap">
+        <div class="section-head"><div class="eyebrow">Solution design</div><h2>Architecture at a glance.</h2><p>A Kotlin Android client communicates with a Python backend. The backend exposes planning and agent endpoints and shares a tool layer for place discovery and routing.</p></div>
+        <div class="architecture">
+          <div class="flow">
+            <div class="node"><strong>Android app</strong><span>Jetpack Compose · UI</span></div>
+            <div class="node"><strong>ViewModels</strong><span>StateFlow · MVVM</span></div>
+            <div class="node"><strong>FastAPI backend</strong><span>REST · Pydantic</span></div>
+            <div class="node"><strong>AI orchestration</strong><span>Gemini · RAG · MCP</span></div>
+          </div>
+          <p class="arch-note">The Android data/repository layer calls the backend. The backend supports a deterministic planning pipeline and an agent chat pipeline; both can use shared MCP tools for place search, place details, routes and route matrices. External geographic data and routing are provided by OpenStreetMap services and OSRM.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="technology">
+      <div class="wrap">
+        <div class="section-head"><div class="eyebrow">Built with</div><h2>Technology stack.</h2><p>Native Android experience backed by an AI-enabled Python service.</p></div>
+        <div class="techgrid">
+          <article class="tech"><h3>Android</h3><ul><li>Kotlin 2.0.21</li><li>Jetpack Compose + Material 3</li><li>Navigation Compose</li><li>MVVM + StateFlow</li><li>Retrofit + OkHttp</li><li>kotlinx.serialization</li><li>Google Play Services Location</li></ul></article>
+          <article class="tech"><h3>Backend</h3><ul><li>Python + FastAPI</li><li>Pydantic v2</li><li>httpx + Uvicorn</li><li>pytest</li><li>MCP Python SDK / FastMCP</li></ul></article>
+          <article class="tech"><h3>AI &amp; geospatial</h3><ul><li>Google Gemini</li><li>Function calling + embeddings</li><li>RAG knowledge base</li><li>OpenStreetMap + Overpass</li><li>Nominatim geocoding/search</li><li>OSRM road routing</li></ul></article>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer><div class="wrap foot"><span>PlaceExplorer · AI-Powered Outing Planner</span><a href="https://github.com/DeVentures7/dlpdubey7-placeexplorer" target="_blank" rel="noopener">GitHub repository ↗</a></div></footer>
+</body>
+</html>

@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dev.placeexplorer.core.AppContainer
 import com.dev.placeexplorer.core.OutingSession
+import com.dev.placeexplorer.core.RepositoryMode
 import com.dev.placeexplorer.domain.model.Itinerary
+import com.dev.placeexplorer.domain.model.OutingRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,7 +23,8 @@ data class ItineraryUiState(
 )
 
 class ItineraryViewModel(
-    private val repository: com.dev.placeexplorer.domain.repository.OutingRepository = AppContainer.outingRepository
+    private val repository: com.dev.placeexplorer.domain.repository.OutingRepository = AppContainer.outingRepository,
+    private val mockMode: Boolean = AppContainer.repositoryMode == RepositoryMode.MOCK
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ItineraryUiState())
@@ -43,9 +46,16 @@ class ItineraryViewModel(
         }
     }
 
-    /** Re-plan from the original request (used after process death or "regenerate"). */
+    /**
+     * Re-plan from the original request (used after process death or
+     * "regenerate"). In mock mode a missing request falls back to the
+     * default mock outing, so the screen can rebuild itself without GPS
+     * or backend access; in API mode a missing request is a dead end —
+     * the user must plan from home first.
+     */
     fun regenerate() {
-        val request = OutingSession.itinerary.value?.request ?: return
+        val request = OutingSession.itinerary.value?.request
+            ?: (if (mockMode) OutingRequest() else return)
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             runCatching { repository.generateOuting(request) }

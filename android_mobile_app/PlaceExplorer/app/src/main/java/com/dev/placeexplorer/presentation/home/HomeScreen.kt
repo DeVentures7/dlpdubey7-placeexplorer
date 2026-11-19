@@ -46,8 +46,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -61,6 +59,7 @@ import com.dev.placeexplorer.presentation.components.ErrorDialog
 import com.dev.placeexplorer.presentation.components.ChoicePill
 import com.dev.placeexplorer.presentation.components.InterestCard
 import com.dev.placeexplorer.presentation.components.SectionHeader
+import com.dev.placeexplorer.ui.theme.AppBackgroundBrush
 import com.dev.placeexplorer.ui.theme.PlaceExplorerTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -100,14 +99,7 @@ fun HomeScreen(
 
     Column(
         modifier = Modifier
-            .fillMaxSize().background(
-                Brush.linearGradient(
-                    colors = listOf(
-                        Color(0xFFD6EBFF),
-                        Color(0xFFC5E2FF)
-                    )
-                )
-            )
+            .fillMaxSize().background(AppBackgroundBrush)
             // Keep all content below the status bar: edge-to-edge is on,
             // so the status-bar inset must be added explicitly.
             .windowInsetsPadding(WindowInsets.statusBars)
@@ -157,8 +149,10 @@ fun HomeScreen(
                         )
                         Text(
                             text = when {
-                                uiState.destination.isNotBlank() ->
+                                uiState.destination.isNotBlank() && uiState.currentLocationFix != null ->
                                     "Starting from your current location"
+                                uiState.destination.isNotBlank() ->
+                                    "Starting from the destination city center"
                                 uiState.isLocating || uiState.isResolvingCurrentCity ->
                                     "Locating you…"
                                 else ->

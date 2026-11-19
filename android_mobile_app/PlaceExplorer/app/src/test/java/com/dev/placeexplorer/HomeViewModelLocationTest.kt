@@ -81,6 +81,10 @@ class HomeViewModelLocationTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
+        // These tests exercise the API-mode (GPS + reverse geocode) flow;
+        // pin the flag so they do not depend on the value in source.
+        previousUseApiRepository = com.dev.placeexplorer.core.DevelopmentConfig.useApiRepository
+        com.dev.placeexplorer.core.DevelopmentConfig.useApiRepository = true
         provider = FakeLocationProvider()
         searcher = FakeLocationSearcher(
             listOf(
@@ -120,8 +124,11 @@ class HomeViewModelLocationTest {
         AppContainer.setRepositoryOverride(null)
         AppContainer.setLocationProviderOverride(null)
         AppContainer.setLocationSearcherOverride(null)
+        com.dev.placeexplorer.core.DevelopmentConfig.useApiRepository = previousUseApiRepository
         Dispatchers.resetMain()
     }
+
+    private var previousUseApiRepository: Boolean = true
 
     private fun viewModel() = HomeViewModel(
         reverseGeocoder = { _, _ ->

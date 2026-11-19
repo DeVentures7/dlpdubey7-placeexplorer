@@ -5,6 +5,7 @@ import com.dev.placeexplorer.data.remote.ApiLocationSearcher
 import com.dev.placeexplorer.data.remote.ApiOutingRepository
 import com.dev.placeexplorer.data.remote.ApiClient
 import com.dev.placeexplorer.data.remote.PlanApiService
+import com.dev.placeexplorer.data.repository.MockLocationSearcher
 import com.dev.placeexplorer.data.repository.MockOutingRepository
 import com.dev.placeexplorer.domain.model.Itinerary
 import com.dev.placeexplorer.domain.repository.OutingRepository
@@ -34,7 +35,7 @@ enum class RepositoryMode(val label: String) {
  */
 object DevelopmentConfig {
     const val API_BASE_URL: String = com.dev.placeexplorer.BuildConfig.API_BASE_URL
-    var useApiRepository: Boolean = true
+    var useApiRepository: Boolean = false
 }
 
 /**
@@ -91,8 +92,11 @@ object AppContainer {
      * GET /api/geocode endpoint through the shared Retrofit stack.
      */
     val locationSearcher: LocationSearcher
-        get() = locationSearcherOverride
-            ?: ApiLocationSearcher(planApi)
+        get() = locationSearcherOverride ?: if (DevelopmentConfig.useApiRepository) {
+            ApiLocationSearcher(planApi)
+        } else {
+            MockLocationSearcher()
+        }
 
     private fun createRepository(): OutingRepository =
         if (DevelopmentConfig.useApiRepository) {

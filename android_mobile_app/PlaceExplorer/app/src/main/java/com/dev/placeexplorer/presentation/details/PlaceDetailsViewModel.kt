@@ -40,6 +40,7 @@ class PlaceDetailsViewModel(
 
     init {
         seedFromItinerary()
+        if (_uiState.value.place == null) loadPlaceFromRepository()
         fetchUserLocation()
         loadNearbyFood()
     }
@@ -66,6 +67,32 @@ class PlaceDetailsViewModel(
                         ?.let { loc -> loc.latitude to loc.longitude }
                 )
             }
+        }
+    }
+
+    /**
+     * Repository fallback for when the place is not in the session (e.g.
+     * process death, or an id the repository knows but the current outing
+     * does not). "Place not found" only remains when the repository itself
+     * does not know the id.
+     */
+    private fun loadPlaceFromRepository() {
+        viewModelScope.launch {
+            val preference = OutingSession.itinerary.value
+                ?.request
+                ?.foodPreference
+                ?: com.dev.placeexplorer.domain.model.FoodPreference.BOTH
+            runCatching { repository.getPlaceDetails(placeId, preference) }
+                .onSuccess { details ->
+                    if (details != null) {
+                        _uiState.update { it.copy(place = details.place) }
+                        // Food could not load earlier (place was unknown
+                        // then); kick it off now that the place resolved.
+                        loadNearbyFood()
+                    }
+                }
+                // Failure leaves the existing state untouched; the screen
+                // keeps its honest "Place not found" handling.
         }
     }
 

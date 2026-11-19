@@ -44,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -54,6 +55,7 @@ import com.dev.placeexplorer.domain.model.MealType
 import com.dev.placeexplorer.domain.model.NearbyFoodRecommendation
 import com.dev.placeexplorer.presentation.components.ErrorDialog
 import com.dev.placeexplorer.presentation.components.InfoRow
+import com.dev.placeexplorer.ui.theme.AppBackgroundBrush
 import com.dev.placeexplorer.ui.theme.PlaceExplorerTheme
 import java.util.Locale
 
@@ -69,18 +71,22 @@ fun ItineraryScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(AppBackgroundBrush)
     ) {
         TopAppBar(
             title = { Text("Your Itinerary", style = MaterialTheme.typography.titleLarge) },
             navigationIcon = {
                 IconButton(onClick = onBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onBackground
+                    )
                 }
             },
             windowInsets = WindowInsets.statusBars,
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.background
+                containerColor = Color.Transparent
             )
         )
 
@@ -105,7 +111,7 @@ fun ItineraryScreen(
                     Text(
                         "No itinerary yet. Plan an outing to see it here.",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                 }
             }
@@ -173,8 +179,9 @@ private fun ItineraryContent(
             Spacer(Modifier.height(4.dp))
             Text(
                 text = "${itinerary.destination} • ${formatDuration(itinerary.totalDurationMinutes)} plan",
-                style = MaterialTheme.typography.bodyMedium,
-                color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.9f)
+                style = MaterialTheme.typography.labelMedium,
+                // Fully opaque so the subtitle no longer looks faded.
+                color = androidx.compose.ui.graphics.Color.White
             )
             Spacer(Modifier.height(12.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -187,47 +194,6 @@ private fun ItineraryContent(
                         " – " + timeLabel(itinerary.endTimeMinutes),
                     icon = "🕐"
                 )
-            }
-        }
-
-        // ---- Route overview ----
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .padding(top = 16.dp),
-            shape = RoundedCornerShape(16.dp),
-            color = MaterialTheme.colorScheme.surface,
-            border = androidx.compose.foundation.BorderStroke(
-                1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-            )
-        ) {
-            Row(
-                Modifier.padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("🗺️", style = MaterialTheme.typography.titleLarge)
-                }
-                Spacer(Modifier.width(12.dp))
-                Column {
-                    Text(
-                        "Route overview",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        "Stops are ordered for the shortest travel time. Interactive maps are coming soon.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
             }
         }
 
@@ -261,12 +227,19 @@ private fun ItineraryContent(
             ) {
                 Text(
                     "Worth a detour",
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 itinerary.optionalAttractions.forEach { place ->
                     Surface(
                         shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        // Solid white card with a soft border so it stands
+                        // out against the light-blue page background.
+                        color = MaterialTheme.colorScheme.surface,
+                        border = androidx.compose.foundation.BorderStroke(
+                            1.dp,
+                            MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                        ),
                         onClick = { onPlaceSelected(place.id) }
                     ) {
                         Row(
@@ -283,8 +256,8 @@ private fun ItineraryContent(
                                 Text(place.name, style = MaterialTheme.typography.titleMedium)
                                 Text(
                                     place.shortDescription,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurface,
                                     maxLines = 1
                                 )
                             }
@@ -362,7 +335,11 @@ private fun StopCard(
                 // Image placeholder
                 Surface(
                     shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    border = androidx.compose.foundation.BorderStroke(
+                        1.dp,
+                        MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                    ),
                     modifier = Modifier.size(width = 64.dp, height = 48.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
@@ -374,8 +351,8 @@ private fun StopCard(
             Spacer(Modifier.height(10.dp))
             Text(
                 stop.place.shortDescription,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             // Distance from the user's current location (straight-line),
@@ -417,7 +394,7 @@ private fun StopCard(
                     Text(
                         food.joinToString(" • ") { it.name },
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }

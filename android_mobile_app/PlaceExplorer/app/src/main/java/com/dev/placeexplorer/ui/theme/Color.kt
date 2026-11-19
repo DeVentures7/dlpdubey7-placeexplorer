@@ -1,5 +1,6 @@
 package com.dev.placeexplorer.ui.theme
 
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
 /**
@@ -7,6 +8,14 @@ import androidx.compose.ui.graphics.Color
  * darker blue actions and tiles; slate text keeps the contrast quiet and
  * professional. Tailwind-scale blue/slate tones for consistency.
  */
+
+/** Shared page background: every screen sits on this same light-blue gradient. */
+val AppBackgroundBrush = Brush.linearGradient(
+    colors = listOf(
+        Color(0xFFD6EBFF),
+        Color(0xFFC5E2FF)
+    )
+)
 
 // Brand anchors
 val BrandBlue = Color(0xFF1D4ED8)        // blue-700 — primary actions

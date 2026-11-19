@@ -57,6 +57,7 @@ import com.dev.placeexplorer.presentation.components.ErrorDialog
 import com.dev.placeexplorer.presentation.components.InfoRow
 import com.dev.placeexplorer.presentation.itinerary.distanceLabel
 import com.dev.placeexplorer.presentation.itinerary.formatDuration
+import com.dev.placeexplorer.ui.theme.AppBackgroundBrush
 import com.dev.placeexplorer.ui.theme.PlaceExplorerTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,12 +69,20 @@ fun PlaceDetailsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    Column(Modifier.fillMaxSize()) {
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(AppBackgroundBrush)
+    ) {
         TopAppBar(
             title = { },
             navigationIcon = {
                 IconButton(onClick = onBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onBackground
+                    )
                 }
             },
             windowInsets = WindowInsets.statusBars,
@@ -90,7 +99,7 @@ fun PlaceDetailsScreen(
                     Text(
                         "Place not found",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                 }
             }
@@ -122,7 +131,6 @@ private fun PlaceDetailsContent(uiState: PlaceDetailsUiState) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(180.dp)
                 .background(
                     Brush.linearGradient(
                         listOf(
@@ -132,23 +140,10 @@ private fun PlaceDetailsContent(uiState: PlaceDetailsUiState) {
                     )
                 )
         ) {
-            // Image placeholder
-            Surface(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(20.dp)
-                    .size(width = 72.dp, height = 72.dp),
-                shape = RoundedCornerShape(16.dp),
-                color = Color.White.copy(alpha = 0.25f)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Text("🖼️", style = MaterialTheme.typography.headlineMedium)
-                }
-            }
             Column(
                 Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(start = 104.dp, bottom = 20.dp)
+                    .align(Alignment.TopStart)
+                    .padding(10.dp)
             ) {
                 Text(
                     text = place.name,
@@ -158,8 +153,8 @@ private fun PlaceDetailsContent(uiState: PlaceDetailsUiState) {
                 Text(
                     text = distanceLabel(place.latitude, place.longitude, uiState.userLocation) +
                         " from your location",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White.copy(alpha = 0.9f)
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Color.White
                 )
             }
         }
@@ -175,7 +170,7 @@ private fun PlaceDetailsContent(uiState: PlaceDetailsUiState) {
             // ---- Description (brief) ----
             Text(
                 text = place.shortDescription.ifBlank { place.fullDescription },
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.titleLarge,
                 maxLines = 3
             )
 
@@ -201,7 +196,7 @@ private fun PlaceDetailsContent(uiState: PlaceDetailsUiState) {
                     }
                     InfoRow(
                         icon = Icons.Default.Place,
-                        text = "Suggested visit: ${formatDuration(place.suggestedVisitMinutes)}"
+                        text = "Time to Destination: ${formatDuration(place.suggestedVisitMinutes)}"
                     )
                 }
             }
@@ -224,7 +219,8 @@ private fun PlaceDetailsContent(uiState: PlaceDetailsUiState) {
             // shows a lightweight spinner while it works.
             Text(
                 "Nearby food options",
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onBackground
             )
             when {
                 uiState.isFoodLoading -> {
@@ -242,23 +238,29 @@ private fun PlaceDetailsContent(uiState: PlaceDetailsUiState) {
                         Spacer(Modifier.width(10.dp))
                         Text(
                             "Finding nearby food options…",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                     }
                 }
                 uiState.nearbyRestaurants.isEmpty() -> {
                     Text(
                         "No nearby food options found.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                 }
                 else -> {
                     uiState.nearbyRestaurants.forEach { rec ->
                         Surface(
                             shape = RoundedCornerShape(12.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                            // Solid white card with a soft border so it stands
+                            // out against the light-blue page background.
+                            color = MaterialTheme.colorScheme.surface,
+                            border = androidx.compose.foundation.BorderStroke(
+                                1.dp,
+                                MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                            )
                         ) {
                             Row(
                                 Modifier.padding(12.dp),
@@ -274,8 +276,8 @@ private fun PlaceDetailsContent(uiState: PlaceDetailsUiState) {
                                     Text(rec.name, style = MaterialTheme.typography.titleMedium)
                                     Text(
                                         foodDistanceLabel(rec.distanceKm),
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
                                 }
                                 if (rec.isVegetarianFriendly) {
