@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PlaceExplorer Architecture</title>
+<style>
+  :root {
+    --bg: #f6f7fb;
+    --surface: #ffffff;
+    --ink: #1c2333;
+    --ink-soft: #5a6478;
+    --line: #dde2ec;
+    --android: #34a853;
+    --android-soft: #e6f4ea;
+    --backend: #1a73e8;
+    --backend-soft: #e8f0fe;
+    --ai: #a142f4;
+    --ai-soft: #f3e8fd;
+    --ext: #f9ab00;
+    --ext-soft: #fef7e0;
+    --flow: #e8710a;
+    --shadow: 0 1px 3px rgba(28,35,51,.08), 0 4px 14px rgba(28,35,51,.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12161f;
+      --surface: #1b2230;
+      --ink: #e8ecf4;
+      --ink-soft: #9aa5ba;
+      --line: #2c3547;
+      --android-soft: #1e3527;
+      --backend-soft: #1d2c47;
+      --ai-soft: #2e2244;
+      --ext-soft: #3a3013;
+      --flow: #ff9d4d;
+      --shadow: 0 1px 3px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+    padding: 24px 16px 60px;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; }
+  header { margin-bottom: 24px; }
+  h1 { font-size: 1.5rem; letter-spacing: -0.02em; }
+  .sub { color: var(--ink-soft); font-size: .9rem; margin-top: 4px; }
+
+  /* legend */
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 10px 18px;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px 16px; margin-bottom: 24px;
+    font-size: .82rem; box-shadow: var(--shadow);
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .dot { width: 11px; height: 11px; border-radius: 3px; flex: none; }
+  .d-android { background: var(--android); }
+  .d-backend { background: var(--backend); }
+  .d-ai { background: var(--ai); }
+  .d-ext { background: var(--ext); }
+
+  /* column layout */
+  .cols {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  @media (min-width: 860px) {
+    .cols { grid-template-columns: 1fr 44px 1.25fr 44px 1fr; align-items: start; }
+    .arrow-col { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 26px; padding-top: 90px; }
+  }
+  .arrow-col .arr { display: none; }
+  @media (min-width: 860px) {
+    .arrow-col .arr {
+      display: block; color: var(--flow); font-size: 1.3rem; font-weight: 700;
+      text-align: center; line-height: 1.1;
+    }
+    .arrow-col .arr small { display:block; font-size:.62rem; color: var(--ink-soft); font-weight: 500; letter-spacing:.04em; }
+  }
+  @media (max-width: 859px) {
+    .arrow-col .arr {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      color: var(--flow); font-weight: 700; font-size: .8rem; padding: 2px 0;
+    }
+  }
+
+  /* panels */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .panel > .p-head {
+    display: flex; align-items: center; gap: 9px;
+    padding: 11px 16px;
+    font-weight: 700; font-size: .9rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .p-head .tag {
+    font-size: .62rem; font-weight: 700; letter-spacing: .06em;
+    padding: 2px 8px; border-radius: 20px; text-transform: uppercase;
+  }
+  .p-body { padding: 14px 16px 16px; }
+
+  .android .p-head { background: var(--android-soft); }
+  .android .p-head .tag { background: var(--android); color: #fff; }
+  .backend .p-head { background: var(--backend-soft); }
+  .backend .p-head .tag { background: var(--backend); color: #fff; }
+  .ai .p-head { background: var(--ai-soft); }
+  .ai .p-head .tag { background: var(--ai); color: #fff; }
+  .ext .p-head { background: var(--ext-soft); }
+  .ext .p-head .tag { background: var(--ext); color: #fff; }
+
+  .file {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: .78rem;
+  }
+  .node {
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    padding: 8px 11px;
+    margin-bottom: 8px;
+    background: var(--bg);
+  }
+  .node:last-child { margin-bottom: 0; }
+  .node b { font-size: .82rem; display: block; }
+  .node .file { color: var(--ink-soft); display: block; margin-top: 1px; }
+  .node p { font-size: .76rem; color: var(--ink-soft); margin-top: 3px; }
+  .node .endpoint {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: .72rem; font-weight: 700;
+    display: inline-block; margin-top: 5px;
+    padding: 1px 7px; border-radius: 5px;
+    background: var(--backend-soft); color: var(--backend);
+  }
+  .ep-method { opacity: .85; }
+  .step {
+    display: flex; gap: 10px; margin-bottom: 10px; font-size: .8rem;
+  }
+  .step:last-child { margin-bottom: 0; }
+  .step .n {
+    flex: none; width: 22px; height: 22px; border-radius: 50%;
+    background: var(--ai); color: #fff; font-weight: 700; font-size: .72rem;
+    display: flex; align-items: center; justify-content: center; margin-top: 1px;
+  }
+  .ext-node { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px; }
+  .ext-node:last-child { margin-bottom: 0; }
+  .ext-node .ico {
+    flex: none; width: 34px; height: 34px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; background: var(--ext-soft);
+  }
+  .ext-node b { font-size: .84rem; }
+  .ext-node p { font-size: .75rem; color: var(--ink-soft); }
+  .ext-node .file { color: var(--ink-soft); }
+
+  /* numbered flow section */
+  h2 { font-size: 1.05rem; margin: 34px 0 14px; letter-spacing: -0.01em; }
+  .flowgrid {
+    display: grid; grid-template-columns: 1fr; gap: 12px;
+  }
+  @media (min-width: 700px) { .flowgrid { grid-template-columns: 1fr 1fr; } }
+  .fstep {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 12px; padding: 13px 15px; box-shadow: var(--shadow);
+    display: flex; gap: 12px;
+  }
+  .fstep .n {
+    flex: none; width: 26px; height: 26px; border-radius: 50%;
+    background: var(--flow); color: #fff; font-weight: 700; font-size: .8rem;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .fstep b { font-size: .86rem; display: block; }
+  .fstep p { font-size: .78rem; color: var(--ink-soft); margin-top: 2px; }
+  .fstep .file { font-size: .7rem; color: var(--ink-soft); display: block; margin-top: 4px; }
+
+  footer { margin-top: 34px; color: var(--ink-soft); font-size: .78rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>PlaceExplorer — Architecture</h1>
+    <div class="sub">AI outing planner · Kotlin/Compose app ⇄ FastAPI backend ⇄ Gemini + OpenStreetMap</div>
+  </header>
+
+  <div class="legend">
+    <span><span class="dot d-android"></span>Android app</span>
+    <span><span class="dot d-backend"></span>FastAPI backend</span>
+    <span><span class="dot d-ai"></span>AI layer (Gemini · RAG · MCP)</span>
+    <span><span class="dot d-ext"></span>External services</span>
+  </div>
+
+  <div class="cols">
+    <!-- ================= ANDROID ================= -->
+    <div class="panel android">
+      <div class="p-head"><span class="tag">App</span> Android — Kotlin + Jetpack Compose</div>
+      <div class="p-body">
+        <div class="node">
+          <b>MainActivity</b>
+          <span class="file">MainActivity.kt</span>
+          <p>Entry point. Calls <span class="file">AppContainer.init()</span>.</p>
+        </div>
+        <div class="node">
+          <b>Service locator + shared state</b>
+          <span class="file">core/AppContainer.kt</span>
+          <p>Picks Mock vs API mode; <span class="file">OutingSession</span> shares the itinerary between screens.</p>
+        </div>
+        <div class="node">
+          <b>Navigation (3 screens)</b>
+          <span class="file">navigation/PlaceExplorerNavHost.kt</span>
+          <p>Home → Itinerary → Place&nbsp;Details (place id URL-encoded in the route).</p>
+        </div>
+        <div class="node">
+          <b>Home screen</b>
+          <span class="file">presentation/home/HomeScreen.kt + HomeViewModel.kt</span>
+          <p>GPS fix, destination search, duration / time-of-day / interests / food questionnaire.</p>
+        </div>
+        <div class="node">
+          <b>Itinerary &amp; Details screens</b>
+          <span class="file">presentation/itinerary/… · presentation/details/…</span>
+          <p>Shows the plan; tapping a stop loads its details.</p>
+        </div>
+        <div class="node">
+          <b>Networking stack</b>
+          <span class="file">data/remote/ ApiClient · PlanApiService · ApiOutingRepository · ApiDtos</span>
+          <p>Retrofit + OkHttp + kotlinx-serialization. 4-min read timeout (slow Overpass).</p>
+        </div>
+        <div class="node">
+          <b>Device location</b>
+          <span class="file">location/DeviceLocationProvider.kt · search/LocationSearcher.kt</span>
+          <p>Fused GPS provider; destination search interface (API or mock).</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- arrows -->
+    <div class="arrow-col">
+      <div class="arr">⇄ <small>HTTP / JSON</small></div>
+    </div>
+
+    <!-- ================= BACKEND ================= -->
+    <div class="panel backend">
+      <div class="p-head"><span class="tag">API</span> Backend — Python FastAPI</div>
+      <div class="p-body">
+        <div class="node">
+          <b>HTTP endpoints</b>
+          <span class="file">app/main.py</span>
+          <span class="endpoint"><span class="ep-method">GET</span> /health</span>
+          <span class="endpoint"><span class="ep-method">POST</span> /api/plan</span>
+          <span class="endpoint"><span class="ep-method">POST</span> /api/agent/chat</span>
+          <span class="endpoint"><span class="ep-method">GET</span> /api/geocode (+/reverse)</span>
+          <span class="endpoint"><span class="ep-method">GET</span> /api/places/search</span>
+          <span class="endpoint"><span class="ep-method">GET</span> /api/places/{id}</span>
+        </div>
+        <div class="node">
+          <b>Itinerary pipeline</b>
+          <span class="file">services/itinerary_generator.py</span>
+          <p>Runs <span class="endpoint">POST /api/plan</span>: RAG → geocode → MCP search → rank → OSRM routing → schedule.</p>
+        </div>
+        <div class="node">
+          <b>Place details service</b>
+          <span class="file">services/place_details_service.py</span>
+          <p>Resolves the exact OSM id + nearby food &amp; attractions.</p>
+        </div>
+        <div class="node">
+          <b>Geocoding tools</b>
+          <span class="file">tools/geocode_tools.py</span>
+          <p>OSM Nominatim: text → coordinates and back.</p>
+        </div>
+        <div class="node">
+          <b>Request/response schemas</b>
+          <span class="file">schemas/outing.py · schemas/geocoding.py</span>
+          <p>Pydantic models mirrored by the Kotlin DTOs.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- arrows -->
+    <div class="arrow-col">
+      <div class="arr">→ <small>stdio</small></div>
+    </div>
+
+    <!-- ================= AI LAYER ================= -->
+    <div class="panel ai">
+      <div class="p-head"><span class="tag">AI</span> AI layer — Gemini · RAG · MCP</div>
+      <div class="p-body">
+        <div class="node">
+          <b>Gemini agent loop</b>
+          <span class="file">agent/mcp_agent.py</span>
+          <p>Function-calling loop (max 5 turns) powering <span class="file">POST /api/agent/chat</span>.</p>
+        </div>
+        <div class="node">
+          <b>MCP server (subprocess, stdio)</b>
+          <span class="file">mcp_server/server.py</span>
+          <p>Exposes 4 tools: <span class="file">search_places · get_place_details · get_route · get_route_matrix</span>. Same server used by the agent and the plan pipeline.</p>
+        </div>
+        <div class="node">
+          <b>RAG pipeline</b>
+          <span class="file">rag/ rag_pipeline · document_loader · text_splitter · embedding_service · vector_store</span>
+          <p>Embeds destination guides (Gemini embeddings), cosine-similarity search over a local store.</p>
+        </div>
+        <div class="node">
+          <b>Knowledge base</b>
+          <span class="file">knowledge_base/destinations/*.md</span>
+          <p>Pune &amp; Goa travel guides — the RAG source documents.</p>
+        </div>
+        <div class="node">
+          <b>Skills &amp; intent routing</b>
+          <span class="file">skills/ intent_router · skill_selector · skill_loader · restaurant_discovery/SKILL.md</span>
+          <p>Keyword-based routing picks skills and decides RAG vs MCP for each message.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cols" style="margin-top: 4px;">
+    <div class="panel ext">
+      <div class="p-head"><span class="tag">External</span> External services (called by the backend)</div>
+      <div class="p-body">
+        <div class="ext-node">
+          <div class="ico">🧠</div>
+          <div>
+            <b>Google Gemini API</b>
+            <span class="file">main.py client · rag/embedding_service.py</span>
+            <p>LLM answers, itinerary titles, embeddings. Key from <span class="file">.env</span> (<span class="file">GEMINI_API_KEY</span>).</p>
+          </div>
+        </div>
+        <div class="ext-node">
+          <div class="ico">🗺️</div>
+          <div>
+            <b>OSM Nominatim</b>
+            <span class="file">tools/geocode_tools.py</span>
+            <p>Geocode / reverse geocode. Debounced on the app side per usage policy.</p>
+          </div>
+        </div>
+        <div class="ext-node">
+          <div class="ico">📍</div>
+          <div>
+            <b>Overpass API (OpenStreetMap)</b>
+            <span class="file">tools/place_tools.py</span>
+            <p>Live place search by category. TTL cache + mirror fallbacks.</p>
+          </div>
+        </div>
+        <div class="ext-node">
+          <div class="ico">🚗</div>
+          <div>
+            <b>OSRM routing</b>
+            <span class="file">tools/route_tools.py</span>
+            <p>Road distances &amp; durations (Table API) — never straight-line estimates.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div></div>
+    <div></div>
+  </div>
+
+  <h2>Complete flow — “Generate my outing”</h2>
+  <div class="flowgrid">
+    <div class="fstep"><div class="n">1</div><div><b>Home screen opens</b><p>GPS fix → <span class="endpoint">GET /api/geocode/reverse</span> labels the device coordinates as the default destination city.</p><span class="file">HomeViewModel.kt → geocode_tools.py</span></div></div>
+    <div class="fstep"><div class="n">2</div><div><b>Destination search</b><p>Debounced text search → <span class="endpoint">GET /api/geocode</span> returns candidate places to pick from.</p><span class="file">ApiLocationSearcher.kt → geocode_tools.py</span></div></div>
+    <div class="fstep"><div class="n">3</div><div><b>Questionnaire → Plan request</b><p>Duration, time of day, interest, food preference → Retrofit <span class="endpoint">POST /api/plan</span> with an <span class="file">OutingRequest</span>.</p><span class="file">HomeViewModel.kt → ApiOutingRepository.kt</span></div></div>
+    <div class="fstep"><div class="n">4</div><div><b>RAG retrieval</b><p>Query embedded and matched against destination guides; context attached to the pipeline.</p><span class="file">itinerary_generator.py → rag_pipeline.py → knowledge_base/</span></div></div>
+    <div class="fstep"><div class="n">5</div><div><b>MCP place discovery</b><p>FastAPI spawns the MCP server (stdio) and calls <span class="file">search_places</span> per category — real places from Overpass.</p><span class="file">itinerary_generator.py → mcp_server/server.py → place_tools.py</span></div></div>
+    <div class="fstep"><div class="n">6</div><div><b>Validate &amp; rank</b><p>Drops places without coordinates (never fabricates), ranks by distance + fame, keeps top 20.</p><span class="file">itinerary_generator.py</span></div></div>
+    <div class="fstep"><div class="n">7</div><div><b>Route &amp; schedule</b><p>One OSRM Table request → road-time matrix → nearest-neighbour ordering → timed stops within the outing window; Gemini writes only the title.</p><span class="file">route_tools.py · itinerary_generator.py</span></div></div>
+    <div class="fstep"><div class="n">8</div><div><b>Itinerary screen</b><p>Structured <span class="file">Itinerary</span> JSON → stored in <span class="file">OutingSession</span> → stops, travel legs, “worth a detour”, food picks.</p><span class="file">ItineraryScreen.kt</span></div></div>
+    <div class="fstep"><div class="n">9</div><div><b>Place details</b><p>Tap a stop → <span class="endpoint">GET /api/places/{id}</span> resolves the exact OSM id + nearby restaurants/attractions.</p><span class="file">PlaceDetailsViewModel.kt → place_details_service.py</span></div></div>
+    <div class="fstep"><div class="n">+</div><div><b>Free chat (secondary)</b><p><span class="endpoint">POST /api/agent/chat</span>: intent router picks RAG / MCP, skills add instructions, Gemini function-calls MCP tools in a loop.</p><span class="file">mcp_agent.py · skills/ · rag_pipeline.py</span></div></div>
+  </div>
+
+  <footer>
+    Error philosophy: the backend never fabricates data — unresolvable destination → 400, no usable places → 503, routing unavailable → 503 — and the app never silently falls back from API to mock mode.
+  </footer>
+</div>
+</body>
+</html>
